@@ -66,7 +66,38 @@ function generateShortcutData(modeKey, modeName, withRecord = false) {
 
 // バイナリplistを生成
 async function generateBinaryPlist(data) {
-    return plist.build(data);
+    // XMLからバイナリに変換
+    const xmlPlist = plist.build(data);
+    const { spawn } = require('child_process');
+    const { promisify } = require('util');
+    const { writeFile, readFile, unlink } = require('fs').promises;
+    const tmpFile = `/tmp/shortcut_${Date.now()}.plist`;
+    
+    try {
+        // 一時的にXMLファイルを作成
+        await writeFile(tmpFile, xmlPlist);
+        
+        // plutil コマンドでバイナリ形式に変換
+        await new Promise((resolve, reject) => {
+            const plutil = spawn('plutil', ['-convert', 'binary1', tmpFile]);
+            plutil.on('close', (code) => {
+                if (code === 0) resolve();
+                else reject(new Error(`plutil exited with code ${code}`));
+            });
+        });
+        
+        // バイナリファイルを読み込み
+        const binaryData = await readFile(tmpFile);
+        
+        // 一時ファイルを削除
+        await unlink(tmpFile);
+        
+        return binaryData;
+    } catch (error) {
+        // plutilが使えない場合はXMLを返す（フォールバック）
+        console.warn('Could not convert to binary plist, using XML format');
+        return xmlPlist;
+    }
 }
 
 // JSONファイルからモード情報を読み込み
