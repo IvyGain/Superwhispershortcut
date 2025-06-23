@@ -1,0 +1,9 @@
+{
+  "key": "test-mode",
+  "name": "テストモード",
+  "type": "custom",
+  "language": "ja",
+  "languageModelID": "sw-gpt-4",
+  "prompt": "これはテスト用のカスタムモードです",
+  "description": "動作確認用のサンプルモード"
+}
