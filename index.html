@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Superwhisper ショートカット一括生成ツール</title>
+    <title>Superwhisper Mode Manager - 4ステップで完了</title>
     <style>
         * {
             margin: 0;
@@ -13,961 +13,840 @@
         
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
+            background: #f5f5f7;
+            color: #333;
+            line-height: 1.6;
         }
         
         .container {
-            max-width: 1000px;
+            max-width: 1200px;
             margin: 0 auto;
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            overflow: hidden;
+            padding: 20px;
         }
         
+        /* ヘッダー */
         .header {
-            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 40px;
+            padding: 60px 40px;
+            border-radius: 20px;
             text-align: center;
+            margin-bottom: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
         }
         
         .header h1 {
             font-size: 2.5em;
-            margin-bottom: 10px;
+            margin-bottom: 20px;
             font-weight: 700;
         }
         
         .header p {
             font-size: 1.2em;
-            opacity: 0.9;
+            opacity: 0.95;
         }
         
-        .content {
-            padding: 40px;
+        /* ステップセクション共通 */
+        .step-section {
+            background: white;
+            border-radius: 20px;
+            padding: 50px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            position: relative;
+            border-left: 6px solid #667eea;
         }
         
-        .upload-section {
+        .step-header {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .step-number {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2em;
+            font-weight: bold;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+        
+        .step-title {
+            font-size: 2em;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .step-description {
+            font-size: 1.1em;
+            color: #666;
+            margin-bottom: 30px;
+            line-height: 1.7;
+        }
+        
+        /* STEP 1: フォルダ探し */
+        .folder-guide {
             background: #f8f9fa;
             border-radius: 15px;
-            border: 3px dashed #4facfe;
             padding: 30px;
-            text-align: center;
-            margin-bottom: 30px;
-            transition: all 0.3s ease;
+            border: 2px solid #e9ecef;
         }
         
-        .upload-tabs {
+        .folder-path-container {
             display: flex;
-            margin-bottom: 30px;
-            border-radius: 10px;
-            overflow: hidden;
-            border: 2px solid #e0e0e0;
-            background: white;
+            align-items: center;
+            gap: 15px;
+            margin: 20px 0;
         }
         
-        .upload-tab {
+        .folder-path {
             flex: 1;
-            padding: 15px 20px;
-            border: none;
-            background: #f8f9fa;
-            color: #666;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 16px;
-            transition: all 0.3s ease;
+            background: #1e1e1e;
+            color: #ffffff;
+            padding: 20px 25px;
+            border-radius: 10px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 18px;
+            text-align: center;
+            border: 3px solid #667eea;
+            user-select: all;
         }
         
-        .upload-tab.active {
-            background: #4facfe;
+        .path-copy-btn {
+            background: #28a745;
             color: white;
+            border: none;
+            padding: 20px 25px;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            font-size: 16px;
         }
         
-        .upload-tab:hover:not(.active) {
-            background: #e9ecef;
+        .path-copy-btn:hover {
+            background: #218838;
+            transform: translateY(-2px);
         }
         
-        .upload-content {
-            padding: 20px 0;
+        .path-copy-btn.copied {
+            background: #667eea;
         }
         
-        .upload-section:hover {
-            border-color: #00f2fe;
-            background: #f0f8ff;
-        }
-        
-        .upload-section.dragover {
-            border-color: #00f2fe;
+        .finder-tip {
             background: #e3f2fd;
+            border: 1px solid #bbdefb;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        
+        .tip-title {
+            font-weight: 600;
+            color: #1976d2;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        /* STEP 2: アップロード */
+        .upload-area {
+            border: 3px dashed #ddd;
+            border-radius: 20px;
+            padding: 60px;
+            text-align: center;
+            transition: all 0.3s ease;
+            background: #fafafa;
+        }
+        
+        .upload-area.dragover {
+            border-color: #667eea;
+            background: #f8f9ff;
             transform: scale(1.02);
         }
         
         .upload-icon {
-            font-size: 4em;
+            font-size: 5em;
+            color: #667eea;
             margin-bottom: 20px;
-            color: #4facfe;
         }
         
         .upload-text {
-            font-size: 1.2em;
+            font-size: 1.3em;
             color: #333;
-            margin-bottom: 20px;
+            margin-bottom: 30px;
+            font-weight: 500;
         }
         
-        .upload-input {
-            display: none;
+        .upload-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
         }
         
         .upload-btn {
-            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
-            padding: 15px 30px;
-            border-radius: 10px;
-            font-size: 16px;
+            padding: 20px 40px;
+            border-radius: 15px;
+            font-size: 18px;
             font-weight: 600;
             cursor: pointer;
-            transition: transform 0.2s ease;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
         }
         
         .upload-btn:hover {
-            transform: translateY(-2px);
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(102, 126, 234, 0.4);
         }
         
-        .modes-grid {
+        .file-input {
+            display: none;
+        }
+        
+        /* STEP 3: モード一覧 */
+        .modes-container {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 20px;
-            margin-top: 30px;
+            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+            gap: 25px;
         }
         
         .mode-card {
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-            padding: 25px;
-            border: 2px solid #f0f0f0;
+            background: #fafafa;
+            border-radius: 20px;
+            padding: 30px;
             transition: all 0.3s ease;
+            border: 2px solid transparent;
+            position: relative;
         }
         
         .mode-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 15px 30px rgba(0,0,0,0.15);
-            border-color: #4facfe;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.12);
+            border-color: #667eea;
+            background: white;
         }
         
         .mode-header {
-            display: flex;
-            align-items: center;
-            margin-bottom: 15px;
+            margin-bottom: 25px;
         }
         
-        .mode-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 10px;
-            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 1.2em;
-            margin-right: 15px;
-        }
-        
-        .mode-info h3 {
+        .mode-title {
+            font-size: 1.5em;
+            font-weight: 600;
             color: #333;
-            font-size: 1.2em;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
         }
         
-        .mode-key {
-            color: #666;
-            font-family: 'Monaco', 'Menlo', monospace;
+        .mode-type {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 6px 16px;
+            border-radius: 20px;
             font-size: 0.9em;
-            background: #f5f5f5;
-            padding: 2px 6px;
-            border-radius: 4px;
+            font-weight: 600;
         }
         
         .mode-details {
-            margin: 15px 0;
+            margin: 20px 0;
         }
         
-        .mode-detail {
+        .detail-row {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 8px;
-            font-size: 0.9em;
+            padding: 12px 0;
+            border-bottom: 1px solid #e0e0e0;
         }
         
-        .mode-detail .label {
+        .detail-label {
             color: #666;
-        }
-        
-        .mode-detail .value {
-            color: #333;
             font-weight: 500;
         }
         
-        .download-options {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-        
-        .download-btn {
-            flex: 1;
-            min-width: 120px;
-            background: #28a745;
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 14px;
+        .detail-value {
+            color: #333;
             font-weight: 600;
-            transition: all 0.2s ease;
         }
         
-        .download-btn:hover {
-            background: #218838;
-            transform: translateY(-1px);
+        .prompt-preview {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+            border-left: 4px solid #667eea;
         }
         
-        .download-btn.secondary {
-            background: #6c757d;
+        .prompt-label {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 10px;
+            font-weight: 600;
         }
         
-        .download-btn.secondary:hover {
-            background: #5a6268;
+        .prompt-text {
+            color: #333;
+            font-size: 0.95em;
+            line-height: 1.6;
         }
         
-        .bulk-actions {
-            background: #e8f5e8;
+        .key-section {
+            background: white;
             border-radius: 15px;
             padding: 25px;
-            margin-bottom: 30px;
+            margin-top: 25px;
+            border: 2px solid #e0e0e0;
             text-align: center;
-            border-left: 5px solid #28a745;
         }
         
-        .bulk-actions h3 {
-            color: #155724;
+        .key-label {
+            font-size: 1em;
+            color: #333;
             margin-bottom: 15px;
+            font-weight: 600;
         }
         
-        .bulk-btn {
+        .key-display {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 16px;
+            color: #333;
+            border: 2px solid #e0e0e0;
+            text-align: center;
+        }
+        
+        .copy-btn {
             background: #28a745;
             color: white;
             border: none;
-            padding: 15px 30px;
-            border-radius: 10px;
-            font-size: 16px;
+            padding: 15px 25px;
+            border-radius: 12px;
             font-weight: 600;
             cursor: pointer;
-            margin: 0 10px;
-            transition: all 0.2s ease;
+            transition: all 0.3s ease;
+            font-size: 16px;
+            min-width: 200px;
         }
         
-        .bulk-btn:hover {
+        .copy-btn:hover {
             background: #218838;
             transform: translateY(-2px);
         }
         
-        .progress-bar {
-            width: 100%;
-            height: 4px;
-            background: #e0e0e0;
-            border-radius: 2px;
-            margin: 20px 0;
-            overflow: hidden;
+        .copy-btn.copied {
+            background: #667eea;
         }
         
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-            width: 0%;
-            transition: width 0.3s ease;
+        /* STEP 4: 完了メッセージ */
+        .completion-section {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            padding: 60px 50px;
+            border-radius: 20px;
+            text-align: center;
+            margin-top: 30px;
+            display: none;
+            box-shadow: 0 20px 40px rgba(40, 167, 69, 0.2);
         }
         
-        .info-box {
-            background: #fff3cd;
-            border: 1px solid #ffeaa7;
-            border-radius: 8px;
-            padding: 20px;
-            margin: 20px 0;
+        .completion-icon {
+            font-size: 5em;
+            margin-bottom: 30px;
         }
         
-        .info-box h4 {
-            color: #856404;
-            margin-bottom: 10px;
+        .completion-title {
+            font-size: 2.5em;
+            font-weight: 600;
+            margin-bottom: 20px;
         }
         
-        .info-box p {
-            color: #856404;
+        .completion-text {
+            font-size: 1.3em;
+            opacity: 0.95;
+            margin-bottom: 40px;
             line-height: 1.6;
         }
         
+        .shortcut-download-section {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .download-title {
+            font-size: 1.5em;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+        
+        .shortcut-btn {
+            background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%);
+            color: white;
+            border: none;
+            padding: 20px 40px;
+            border-radius: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 18px;
+            text-decoration: none;
+            display: inline-block;
+            box-shadow: 0 10px 30px rgba(255, 107, 107, 0.3);
+        }
+        
+        .shortcut-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(255, 107, 107, 0.4);
+        }
+        
+        .final-instructions {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 25px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .instructions-title {
+            font-size: 1.3em;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+        
+        .instructions-list {
+            text-align: left;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .instructions-list li {
+            margin: 10px 0;
+            font-size: 1.1em;
+            opacity: 0.95;
+        }
+        
+        /* ステータスメッセージ */
         .status-message {
-            text-align: center;
-            padding: 20px;
-            margin: 20px 0;
-            border-radius: 10px;
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #28a745;
+            color: white;
+            padding: 20px 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            display: none;
+            z-index: 1000;
+            animation: slideIn 0.3s ease;
             font-weight: 600;
         }
         
-        .status-success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
         }
         
-        .status-error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-        
-        .warning-box {
-            background: #f8d7da;
-            border: 1px solid #f5c6cb;
-            border-radius: 8px;
-            padding: 15px;
-            margin: 15px 0;
-            color: #721c24;
-            font-size: 0.9em;
+        /* レスポンシブ */
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .header {
+                padding: 40px 20px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .step-section {
+                padding: 30px 20px;
+            }
+            
+            .completion-section {
+                padding: 40px 20px;
+            }
+            
+            .step-header {
+                flex-direction: column;
+                text-align: center;
+                gap: 15px;
+            }
+            
+            .step-number {
+                width: 60px;
+                height: 60px;
+                font-size: 1.5em;
+            }
+            
+            .step-title {
+                font-size: 1.5em;
+            }
+            
+            .modes-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .upload-area {
+                padding: 40px 20px;
+            }
+            
+            .folder-path-container {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .folder-path {
+                font-size: 16px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
+        <!-- ヘッダー -->
         <div class="header">
-            <h1>🎤 Superwhisper ショートカット一括生成ツール</h1>
-            <p>modesフォルダまたは個別JSONファイルをアップロードして、全てのモードのiOSショートカットを一括生成</p>
+            <h1>🎤 Superwhisper Mode Manager</h1>
+            <p>4ステップでSuperwhisperのモード切替ショートカットが完成！</p>
         </div>
         
-        <div class="content">
-            <div class="info-box">
-                <h4>📋 使い方</h4>
-                <p>
-                    <strong>方法1（推奨）:</strong> <strong>~/Documents/superwhisper/modes</strong> フォルダ全体をドラッグ&ドロップまたは選択<br>
-                    <strong>方法2:</strong> 個別の .json ファイルを複数選択してアップロード<br>
-                    各モードのショートカットが自動生成され、個別またはまとめてダウンロードできます。
-                </p>
+        <!-- STEP 1: modesフォルダを探す -->
+        <div class="step-section">
+            <div class="step-header">
+                <div class="step-number">1</div>
+                <div class="step-title">modesフォルダを探す</div>
+            </div>
+            <div class="step-description">
+                Superwhisperのモード設定ファイルが保存されているフォルダを見つけましょう
             </div>
             
-            <div class="upload-section" id="uploadSection">
-                <div class="upload-tabs">
-                    <button class="upload-tab active" onclick="switchUploadTab('folder', event)">
-                        📁 フォルダをアップロード
-                    </button>
-                    <button class="upload-tab" onclick="switchUploadTab('files', event)">
-                        📄 個別ファイルをアップロード
+            <div class="folder-guide">
+                <h3 style="margin-bottom: 20px; color: #333;">📁 フォルダの場所</h3>
+                <div class="folder-path-container">
+                    <div class="folder-path" id="folderPath">~/Documents/superwhisper/modes</div>
+                    <button class="path-copy-btn" id="pathCopyBtn" onclick="copyFolderPath()">
+                        📋 パスをコピー
                     </button>
                 </div>
                 
-                <div id="folderUpload" class="upload-content">
-                    <div class="upload-icon">📁</div>
-                    <div class="upload-text">
-                        <strong>modesフォルダ全体をここにドラッグ&ドロップ</strong><br>
-                        または下のボタンでフォルダを選択
+                <div class="finder-tip">
+                    <div class="tip-title">
+                        <span>💡</span>
+                        <span>Finderで開く方法</span>
                     </div>
-                    <input type="file" id="folderInput" class="upload-input" webkitdirectory directory multiple>
+                    <p>1. Finderを開く</p>
+                    <p>2. <strong>Command + Shift + G</strong> を押す</p>
+                    <p>3. 上記のパスをコピー&ペーストして「移動」をクリック</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- STEP 2: フォルダ/ファイルをアップロード -->
+        <div class="step-section">
+            <div class="step-header">
+                <div class="step-number">2</div>
+                <div class="step-title">フォルダ/ファイルをアップロード</div>
+            </div>
+            <div class="step-description">
+                見つけたmodesフォルダ全体、または個別のJSONファイルをアップロードしてください
+            </div>
+            
+            <div class="upload-area" id="uploadArea">
+                <div class="upload-icon">📁</div>
+                <div class="upload-text">
+                    <strong>modesフォルダまたはJSONファイルをここにドラッグ&ドロップ</strong>
+                </div>
+                <div class="upload-buttons">
+                    <input type="file" id="folderInput" class="file-input" webkitdirectory directory multiple>
+                    <input type="file" id="filesInput" class="file-input" multiple accept=".json">
                     <button class="upload-btn" onclick="document.getElementById('folderInput').click()">
                         📁 フォルダを選択
                     </button>
-                </div>
-                
-                <div id="filesUpload" class="upload-content" style="display: none;">
-                    <div class="upload-icon">📄</div>
-                    <div class="upload-text">
-                        <strong>JSONファイルを個別選択してドラッグ&ドロップ</strong><br>
-                        または下のボタンで複数ファイルを選択
-                    </div>
-                    <input type="file" id="fileInput" class="upload-input" multiple accept=".json">
-                    <button class="upload-btn" onclick="document.getElementById('fileInput').click()">
+                    <button class="upload-btn" onclick="document.getElementById('filesInput').click()">
                         📄 ファイルを選択
                     </button>
                 </div>
-                
-                <div class="progress-bar" id="progressBar" style="display: none;">
-                    <div class="progress-fill" id="progressFill"></div>
-                </div>
             </div>
-            
-            <div id="statusMessage"></div>
-            
-            <div id="bulkActions" class="bulk-actions" style="display: none;">
-                <h3>🚀 一括ダウンロード</h3>
-                <button class="bulk-btn" onclick="downloadAllShortcuts()">
-                    📥 全ショートカットをZIPでダウンロード
-                </button>
-                <button class="bulk-btn" onclick="downloadAllWithRecord()">
-                    🎙️ 録音付きショートカットをZIPでダウンロード
-                </button>
-            </div>
-            
-            <div id="modesContainer" class="modes-grid"></div>
         </div>
+        
+        <!-- STEP 3: モードを選択してキーをコピー -->
+        <div class="step-section" id="step3Section" style="display: none;">
+            <div class="step-header">
+                <div class="step-number">3</div>
+                <div class="step-title">モードを選択してキーをコピー</div>
+            </div>
+            <div class="step-description">
+                使いたいモードの「キーをコピー」ボタンをクリックしてください。コピー後、自動で完了画面に移動します
+            </div>
+            
+            <div id="modesContainer" class="modes-container"></div>
+        </div>
+        
+        <!-- STEP 4: 完了 -->
+        <div class="completion-section" id="completionSection">
+            <div class="completion-icon">🎉</div>
+            <div class="completion-title">キーをコピーしました！</div>
+            <div class="completion-text">
+                続けてショートカットをダウンロードして、ペーストすれば完成です
+            </div>
+            
+            <div class="shortcut-download-section">
+                <div class="download-title">📱 ショートカットをダウンロード</div>
+                <a href="https://www.icloud.com/shortcuts/546b076bf4bd4d468519441aa8a1a09a" 
+                   target="_blank" 
+                   class="shortcut-btn">
+                    📥 Superwhisperショートカットをダウンロード
+                </a>
+            </div>
+            
+            <div class="final-instructions">
+                <div class="instructions-title">🔧 最後の手順</div>
+                <ol class="instructions-list">
+                    <li>ダウンロードしたショートカットを開く</li>
+                    <li>最初の画面で<strong>コピーしたキーを貼り付け</strong></li>
+                    <li>「完了」をタップ</li>
+                    <li>ショートカットの完成！🎉</li>
+                </ol>
+            </div>
+        </div>
+        
+        <!-- ステータスメッセージ -->
+        <div id="statusMessage" class="status-message"></div>
     </div>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-    <script src="https://unpkg.com/bplist-creator@0.1.1/dist/bplist-creator.js"></script>
+    
     <script>
-        let parsedModes = [];
+        let uploadedModes = [];
+        let copiedKey = '';
         
-        // ファイルアップロード関連
-        const uploadSection = document.getElementById('uploadSection');
-        const fileInput = document.getElementById('fileInput');
+        // DOM要素
+        const uploadArea = document.getElementById('uploadArea');
         const folderInput = document.getElementById('folderInput');
-        const progressBar = document.getElementById('progressBar');
-        const progressFill = document.getElementById('progressFill');
-        let currentUploadMode = 'folder';
+        const filesInput = document.getElementById('filesInput');
+        const modesContainer = document.getElementById('modesContainer');
+        const step3Section = document.getElementById('step3Section');
+        const completionSection = document.getElementById('completionSection');
+        const statusMessage = document.getElementById('statusMessage');
         
-        // タブ切り替え
-        function switchUploadTab(mode, event) {
-            currentUploadMode = mode;
+        // フォルダパスをコピー
+        function copyFolderPath() {
+            const path = '~/Documents/superwhisper/modes';
+            const pathCopyBtn = document.getElementById('pathCopyBtn');
             
-            // タブの切り替え
-            document.querySelectorAll('.upload-tab').forEach(tab => tab.classList.remove('active'));
-            event.target.classList.add('active');
-            
-            // コンテンツの切り替え
-            document.getElementById('folderUpload').style.display = mode === 'folder' ? 'block' : 'none';
-            document.getElementById('filesUpload').style.display = mode === 'files' ? 'block' : 'none';
-        }
-        
-        // ドラッグ&ドロップイベント
-        uploadSection.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            uploadSection.classList.add('dragover');
-        });
-        
-        uploadSection.addEventListener('dragleave', () => {
-            uploadSection.classList.remove('dragover');
-        });
-        
-        uploadSection.addEventListener('drop', (e) => {
-            e.preventDefault();
-            uploadSection.classList.remove('dragover');
-            
-            const items = Array.from(e.dataTransfer.items);
-            
-            // フォルダまたはファイルを判定
-            if (items.some(item => item.webkitGetAsEntry && item.webkitGetAsEntry().isDirectory)) {
-                // フォルダがドロップされた場合
-                processDroppedFolder(items);
-            } else {
-                // ファイルがドロップされた場合
-                const files = Array.from(e.dataTransfer.files).filter(file => file.name.endsWith('.json'));
-                if (files.length > 0) {
-                    processFiles(files);
-                }
-            }
-        });
-        
-        // フォルダ選択イベント
-        folderInput.addEventListener('change', (e) => {
-            const files = Array.from(e.target.files).filter(file => file.name.endsWith('.json'));
-            if (files.length > 0) {
-                processFiles(files);
-            }
-        });
-        
-        // 個別ファイル選択イベント
-        fileInput.addEventListener('change', (e) => {
-            const files = Array.from(e.target.files).filter(file => file.name.endsWith('.json'));
-            if (files.length > 0) {
-                processFiles(files);
-            }
-        });
-        
-        // ドロップされたフォルダを処理
-        async function processDroppedFolder(items) {
-            const files = [];
-            
-            for (const item of items) {
-                const entry = item.webkitGetAsEntry();
-                if (entry) {
-                    const folderFiles = await readDirectoryRecursively(entry);
-                    files.push(...folderFiles.filter(file => file.name.endsWith('.json')));
-                }
-            }
-            
-            if (files.length > 0) {
-                processFiles(files);
-            } else {
-                showStatus('error', '❌ JSONファイルが見つかりませんでした');
-            }
-        }
-        
-        // ディレクトリを再帰的に読み込み
-        function readDirectoryRecursively(dirEntry) {
-            return new Promise((resolve) => {
-                const files = [];
+            navigator.clipboard.writeText(path).then(() => {
+                pathCopyBtn.textContent = '✅ コピー完了！';
+                pathCopyBtn.classList.add('copied');
                 
-                function readEntries(entry) {
-                    return new Promise((entryResolve) => {
-                        if (entry.isFile) {
-                            entry.file((file) => {
-                                files.push(file);
-                                entryResolve();
-                            });
-                        } else if (entry.isDirectory) {
-                            const dirReader = entry.createReader();
-                            dirReader.readEntries(async (entries) => {
-                                for (const childEntry of entries) {
-                                    await readEntries(childEntry);
-                                }
-                                entryResolve();
-                            });
-                        }
-                    });
-                }
+                showStatus('フォルダパスをコピーしました', 'success');
                 
-                readEntries(dirEntry).then(() => resolve(files));
-            });
-        }
-        
-        async function processFiles(files) {
-            showProgress(true);
-            parsedModes = [];
-            
-            let processed = 0;
-            let successCount = 0;
-            let errorCount = 0;
-            
-            for (const file of files) {
-                try {
-                    const content = await readFileContent(file);
-                    const modeData = JSON.parse(content);
-                    
-                    if (modeData.key && modeData.name) {
-                        parsedModes.push({
-                            ...modeData,
-                            fileName: file.name
-                        });
-                        successCount++;
-                    } else {
-                        console.warn(`Invalid mode data in ${file.name}: missing key or name`);
-                        errorCount++;
-                    }
-                } catch (error) {
-                    console.error(`Error processing ${file.name}:`, error);
-                    errorCount++;
-                }
-                
-                processed++;
-                updateProgress((processed / files.length) * 100);
-            }
-            
-            showProgress(false);
-            displayModes();
-            
-            if (successCount > 0) {
-                let message = `✅ ${successCount} 個のモードを読み込みました`;
-                if (errorCount > 0) {
-                    message += ` (${errorCount} 個のファイルでエラー)`;
-                }
-                showStatus('success', message);
-            } else {
-                showStatus('error', '❌ 有効なモードファイルが見つかりませんでした');
-            }
-        }
-        
-        function readFileContent(file) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onload = (e) => resolve(e.target.result);
-                reader.onerror = reject;
-                reader.readAsText(file);
-            });
-        }
-        
-        function showProgress(show) {
-            progressBar.style.display = show ? 'block' : 'none';
-            if (!show) updateProgress(0);
-        }
-        
-        function updateProgress(percent) {
-            progressFill.style.width = `${percent}%`;
-        }
-        
-        function showStatus(type, message) {
-            const statusDiv = document.getElementById('statusMessage');
-            statusDiv.className = `status-message status-${type}`;
-            statusDiv.textContent = message;
-            statusDiv.style.display = 'block';
-            
-            if (type === 'success') {
                 setTimeout(() => {
-                    statusDiv.style.display = 'none';
-                }, 3000);
-            }
+                    pathCopyBtn.textContent = '📋 パスをコピー';
+                    pathCopyBtn.classList.remove('copied');
+                }, 2000);
+            }).catch(() => {
+                // フォールバック
+                const folderPathElement = document.getElementById('folderPath');
+                const range = document.createRange();
+                range.selectNodeContents(folderPathElement);
+                window.getSelection().removeAllRanges();
+                window.getSelection().addRange(range);
+                document.execCommand('copy');
+                window.getSelection().removeAllRanges();
+                
+                showStatus('フォルダパスをコピーしました', 'success');
+            });
         }
         
-        function displayModes() {
-            const container = document.getElementById('modesContainer');
-            const bulkActions = document.getElementById('bulkActions');
+        // ドラッグ&ドロップ
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+        
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+        
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            handleFiles(e.dataTransfer.files);
+        });
+        
+        // ファイル選択
+        folderInput.addEventListener('change', (e) => {
+            handleFiles(e.target.files);
+        });
+        
+        filesInput.addEventListener('change', (e) => {
+            handleFiles(e.target.files);
+        });
+        
+        // ファイル処理
+        async function handleFiles(files) {
+            const jsonFiles = Array.from(files).filter(file => file.name.endsWith('.json'));
             
-            if (parsedModes.length === 0) {
-                container.innerHTML = '<p style="text-align: center; color: #666;">モードが見つかりませんでした</p>';
-                bulkActions.style.display = 'none';
+            if (jsonFiles.length === 0) {
+                showStatus('JSONファイルが見つかりませんでした', 'error');
                 return;
             }
             
-            bulkActions.style.display = 'block';
+            uploadedModes = [];
             
-            container.innerHTML = parsedModes.map(mode => `
+            for (const file of jsonFiles) {
+                try {
+                    const content = await file.text();
+                    const mode = JSON.parse(content);
+                    
+                    if (mode.key && mode.name) {
+                        uploadedModes.push({
+                            ...mode,
+                            fileName: file.name
+                        });
+                    }
+                } catch (error) {
+                    console.error(`Error reading ${file.name}:`, error);
+                }
+            }
+            
+            if (uploadedModes.length > 0) {
+                displayModes();
+                step3Section.style.display = 'block';
+                step3Section.scrollIntoView({ behavior: 'smooth' });
+                showStatus(`${uploadedModes.length}個のモードを読み込みました`, 'success');
+            } else {
+                showStatus('有効なモードファイルが見つかりませんでした', 'error');
+            }
+        }
+        
+        // モード表示
+        function displayModes() {
+            modesContainer.innerHTML = uploadedModes.map((mode, index) => `
                 <div class="mode-card">
                     <div class="mode-header">
-                        <div class="mode-icon">${getModeIcon(mode.type)}</div>
-                        <div class="mode-info">
-                            <h3>${escapeHtml(mode.name)}</h3>
-                            <div class="mode-key">${escapeHtml(mode.key)}</div>
-                        </div>
+                        <div class="mode-title">${escapeHtml(mode.name)}</div>
+                        <span class="mode-type">${escapeHtml(mode.type || 'custom')}</span>
                     </div>
+                    
                     <div class="mode-details">
-                        <div class="mode-detail">
-                            <span class="label">タイプ:</span>
-                            <span class="value">${escapeHtml(mode.type || 'custom')}</span>
+                        <div class="detail-row">
+                            <span class="detail-label">言語</span>
+                            <span class="detail-value">${escapeHtml(mode.language || 'auto')}</span>
                         </div>
-                        <div class="mode-detail">
-                            <span class="label">言語:</span>
-                            <span class="value">${escapeHtml(mode.language || 'auto')}</span>
+                        <div class="detail-row">
+                            <span class="detail-label">AIモデル</span>
+                            <span class="detail-value">${escapeHtml(formatModelName(mode.languageModelID))}</span>
                         </div>
-                        <div class="mode-detail">
-                            <span class="label">AI モデル:</span>
-                            <span class="value">${escapeHtml((mode.languageModelID || '').replace('sw-', '') || 'なし')}</span>
+                        ${mode.outputMode ? `
+                        <div class="detail-row">
+                            <span class="detail-label">出力モード</span>
+                            <span class="detail-value">${escapeHtml(mode.outputMode)}</span>
                         </div>
+                        ` : ''}
                     </div>
-                    <div class="download-options">
-                        <button class="download-btn" onclick="downloadShortcut('${escapeHtml(mode.key)}', false)">
-                            📱 ショートカット
-                        </button>
-                        <button class="download-btn secondary" onclick="downloadShortcut('${escapeHtml(mode.key)}', true)">
-                            🎙️ 録音付き
-                        </button>
-                        <button class="download-btn" onclick="downloadURL('${escapeHtml(mode.key)}', false)" style="background: #6f42c1;">
-                            🔗 URL
+                    
+                    ${mode.prompt ? `
+                    <div class="prompt-preview">
+                        <div class="prompt-label">プロンプト:</div>
+                        <div class="prompt-text">${escapeHtml(truncateText(mode.prompt, 200))}</div>
+                    </div>
+                    ` : ''}
+                    
+                    <div class="key-section">
+                        <div class="key-label">モードキー:</div>
+                        <div class="key-display" id="key-${index}">${escapeHtml(mode.key)}</div>
+                        <button class="copy-btn" id="copyBtn-${index}" onclick="copyKey('${escapeHtml(mode.key)}', ${index})">
+                            📋 キーをコピー
                         </button>
                     </div>
                 </div>
             `).join('');
         }
         
+        // キーをコピー
+        function copyKey(key, index) {
+            navigator.clipboard.writeText(key).then(() => {
+                copiedKey = key;
+                
+                const copyBtn = document.getElementById(`copyBtn-${index}`);
+                copyBtn.textContent = '✅ コピー完了！';
+                copyBtn.classList.add('copied');
+                
+                showStatus(`"${key}" をコピーしました！`, 'success');
+                
+                // 1秒後に完了セクションにスクロール
+                setTimeout(() => {
+                    completionSection.style.display = 'block';
+                    completionSection.scrollIntoView({ behavior: 'smooth' });
+                }, 1000);
+                
+            }).catch(() => {
+                // フォールバック
+                const keyElement = document.getElementById(`key-${index}`);
+                const range = document.createRange();
+                range.selectNodeContents(keyElement);
+                window.getSelection().removeAllRanges();
+                window.getSelection().addRange(range);
+                document.execCommand('copy');
+                window.getSelection().removeAllRanges();
+                
+                copiedKey = key;
+                showStatus(`"${key}" をコピーしました`, 'success');
+                
+                setTimeout(() => {
+                    completionSection.style.display = 'block';
+                    completionSection.scrollIntoView({ behavior: 'smooth' });
+                }, 1000);
+            });
+        }
+        
+        // ユーティリティ関数
         function escapeHtml(text) {
             const div = document.createElement('div');
-            div.textContent = text;
+            div.textContent = text || '';
             return div.innerHTML;
         }
         
-        function getModeIcon(type) {
-            const icons = {
-                'voice': '🗣️',
-                'message': '💬',
-                'email': '📧',
-                'note': '📝',
-                'super': '⭐',
-                'meeting': '👥',
-                'custom': '⚙️'
-            };
-            return icons[type] || '🎤';
+        function formatModelName(modelId) {
+            if (!modelId) return 'なし';
+            return modelId.replace('sw-', '').replace('-', ' ').toUpperCase();
         }
         
-        function generateShortcutData(modeKey, withRecord = false) {
-            const actions = [
-                {
-                    WFWorkflowActionIdentifier: "is.workflow.actions.openurl",
-                    WFWorkflowActionParameters: {
-                        WFInput: {
-                            Value: {
-                                string: `superwhisper://mode?key=${modeKey}`,
-                                attachmentsByRange: {}
-                            },
-                            WFSerializationType: "WFTextTokenString"
-                        }
-                    }
-                }
-            ];
-            
-            if (withRecord) {
-                actions.push({
-                    WFWorkflowActionIdentifier: "is.workflow.actions.openurl",
-                    WFWorkflowActionParameters: {
-                        WFInput: {
-                            Value: {
-                                string: "superwhisper://record",
-                                attachmentsByRange: {}
-                            },
-                            WFSerializationType: "WFTextTokenString"
-                        }
-                    }
-                });
-            }
-            
-            return {
-                WFWorkflowClientVersion: "2605",
-                WFWorkflowClientRelease: "2.2.2",
-                WFWorkflowIcon: {
-                    WFWorkflowIconStartColor: 4274264319,
-                    WFWorkflowIconGlyphNumber: 59511
-                },
-                WFWorkflowImportQuestions: [],
-                WFWorkflowInputContentItemClasses: [
-                    "WFAppContentItem",
-                    "WFStringContentItem"
-                ],
-                WFWorkflowActions: actions,
-                WFWorkflowMinimumClientVersionString: "900",
-                WFWorkflowMinimumClientVersion: 900
-            };
+        function truncateText(text, maxLength) {
+            if (!text || text.length <= maxLength) return text;
+            return text.substring(0, maxLength) + '...';
         }
         
-        // バイナリplist生成の簡易実装
-        function generateBinaryPlist(obj) {
-            // bplist-creatorライブラリを使用する場合
-            if (typeof bplistCreator !== 'undefined') {
-                try {
-                    return bplistCreator(obj);
-                } catch (error) {
-                    console.error('bplist-creator error:', error);
-                    // フォールバック: JSON形式でダウンロード
-                    return null;
-                }
-            }
-            return null;
+        function showStatus(message, type = 'success') {
+            statusMessage.textContent = message;
+            statusMessage.style.display = 'block';
+            statusMessage.style.background = type === 'success' ? '#28a745' : '#dc3545';
+            
+            setTimeout(() => {
+                statusMessage.style.display = 'none';
+            }, 3000);
         }
-        
-        // ショートカットURLスキームを使用した代替方法
-        function generateShortcutURL(mode, withRecord = false) {
-            // iOS ショートカットアプリで直接インポートできるURLを生成
-            const shortcutData = generateShortcutData(mode.key, withRecord);
-            const jsonString = JSON.stringify(shortcutData);
-            const base64 = btoa(unescape(encodeURIComponent(jsonString)));
-            
-            // shortcuts://import-shortcut?url=data:text/shortcut;base64,... 形式
-            return `shortcuts://import-shortcut?url=data:text/shortcut;base64,${base64}&name=${encodeURIComponent(mode.name + (withRecord ? ' + 録音' : ''))}`;
-        }
-        
-        function downloadShortcut(modeKey, withRecord = false) {
-            const mode = parsedModes.find(m => m.key === modeKey);
-            if (!mode) return;
-            
-            try {
-                const shortcutData = generateShortcutData(modeKey, withRecord);
-                const suffix = withRecord ? ' + 録音' : '';
-                const fileName = `${mode.name}${suffix}.shortcut`;
-                
-                // バイナリplist生成を試みる
-                const binaryPlist = generateBinaryPlist(shortcutData);
-                
-                if (binaryPlist) {
-                    // バイナリplistとしてダウンロード
-                    downloadFile(binaryPlist, fileName, 'application/octet-stream');
-                    showStatus('success', `📱 ${fileName} をダウンロードしました`);
-                } else {
-                    // フォールバック: URLスキームを使用
-                    const shortcutURL = generateShortcutURL(mode, withRecord);
-                    const instructionText = `iOS ショートカットアプリでインポートする方法：
-
-1. 以下のURLをコピー：
-${shortcutURL}
-
-2. Safari でURLを開く
-3. 「ショートカット」アプリが開きます
-4. 「ショートカットを追加」をタップ
-
-または、以下のDeep Linkを手動で設定：
-- モード切替: superwhisper://mode?key=${modeKey}
-${withRecord ? '- 録音開始: superwhisper://record' : ''}`;
-                    
-                    downloadFile(instructionText, `${mode.name}${suffix} - インポート方法.txt`, 'text/plain');
-                    showStatus('success', `📋 インポート手順をダウンロードしました`);
-                }
-            } catch (error) {
-                console.error('ショートカット生成エラー:', error);
-                showStatus('error', '❌ ショートカットの生成に失敗しました。URLダウンロードをお試しください。');
-            }
-        }
-        
-        function downloadURL(modeKey, withRecord = false) {
-            const mode = parsedModes.find(m => m.key === modeKey);
-            if (!mode) return;
-            
-            const deepLink = `superwhisper://mode?key=${modeKey}`;
-            let content = `${mode.name} - Superwhisper Deep Link\n\n`;
-            content += `Deep Link URL:\n${deepLink}\n\n`;
-            
-            if (withRecord) {
-                content += `録音開始 URL:\nsuperwhisper://record\n\n`;
-            }
-            
-            content += `使い方:\n`;
-            content += `1. iOSショートカットアプリを開く\n`;
-            content += `2. 右上の + をタップ\n`;
-            content += `3. 「アクションを追加」をタップ\n`;
-            content += `4. 「URL」で検索し「URLを開く」を選択\n`;
-            content += `5. URL欄に上記のDeep Link URLをペースト\n`;
-            if (withRecord) {
-                content += `6. もう一度「URLを開く」を追加し、録音開始URLをペースト\n`;
-            }
-            content += `${withRecord ? '7' : '6'}. 右上の「次へ」をタップしてショートカット名を設定\n`;
-            content += `${withRecord ? '8' : '7'}. 「完了」をタップ\n\n`;
-            
-            // ショートカットインポートURL も追加
-            const shortcutURL = generateShortcutURL(mode, withRecord);
-            content += `\n簡単インポート用URL:\n${shortcutURL}\n`;
-            content += `(このURLをSafariで開くと自動的にショートカットアプリが開きます)\n`;
-            
-            const suffix = withRecord ? ' + 録音' : '';
-            const fileName = `${mode.name}${suffix} - URLs.txt`;
-            
-            downloadFile(content, fileName, 'text/plain');
-            showStatus('success', `🔗 ${fileName} をダウンロードしました`);
-        }
-        
-        async function downloadAllShortcuts() {
-            try {
-                const zip = new JSZip();
-                let hasValidShortcuts = false;
-                
-                for (const mode of parsedModes) {
-                    try {
-                        const shortcutData = generateShortcutData(mode.key, false);
-                        const binaryPlist = generateBinaryPlist(shortcutData);
-                        
-                        if (binaryPlist) {
-                            zip.file(`${mode.name}.shortcut`, binaryPlist);
-                            hasValidShortcuts = true;
-                        } else {
-                            // URLファイルを作成
-                            const deepLink = `superwhisper://mode?key=${mode.key}`;
-                            const shortcutURL = generateShortcutURL(mode, false);
-                            const urlContent = `${mode.name} - Deep Link: ${deepLink}\n\nインポートURL:\n${shortcutURL}`;
-                            zip.file(`${mode.name} - URL.txt`, urlContent);
-                        }
-                    } catch (error) {
-                        console.error(`Error generating shortcut for ${mode.name}:`, error);
-                        // エラーがあってもURLファイルを作成
-                        const deepLink = `superwhisper://mode?key=${mode.key}`;
-                        const urlContent = `${mode.name} - Deep Link: ${deepLink}`;
-                        zip.file(`${mode.name} - URL.txt`, urlContent);
-                    }
-                }
-                
-                // READMEファイルを追加
-                const readmeContent = `Superwhisper ショートカット集
-
-このZIPファイルには以下が含まれています：
-${hasValidShortcuts ? '- .shortcut ファイル: ダブルクリックでショートカットアプリにインポート' : ''}
-- URL.txt ファイル: 手動設定用のURL情報
-
-インポート方法：
-${hasValidShortcuts ? '1. .shortcutファイルをダブルクリック、またはショートカットアプリにドラッグ&ドロップ' : ''}
-${hasValidShortcuts ? '2. 「ショートカットを追加」をタップ' : '1. URL.txtファイルを開き、インポートURLをコピー'}
-${hasValidShortcuts ? '' : '2. SafariでURLを開くとショートカットアプリが起動します'}
-
-手動設定が必要な場合は、URL.txtファイルの内容を参照してください。`;
-                
-                zip.file('README.txt', readmeContent);
-                
-                const zipBlob = await zip.generateAsync({ type: 'blob' });
-                downloadFile(zipBlob, 'superwhisper-shortcuts.zip', 'application/zip');
-                showStatus('success', '📦 全ショートカットをZIPでダウンロードしました');
-            } catch (error) {
-                console.error('一括ダウンロードエラー:', error);
-                showStatus('error', '❌ 一括ダウンロードに失敗しました');
-            }
-        }
-        
-        async function downloadAllWithRecord() {
-            try {
-                const zip = new JSZip();
-                let hasValidShortcuts = false;
-                
-                for (const mode of parsedModes) {
-                    try {
-                        const shortcutData = generateShortcutData(mode.key, true);
-                        const binaryPlist = generateBinaryPlist(shortcutData);
-                        
-                        if (binaryPlist) {
-                            zip.file(`${mode.name} + 録音.shortcut`, binaryPlist);
-                            hasValidShortcuts = true;
-                        } else {
-                            // URLファイルを作成
-                            const deepLink = `superwhisper://mode?key=${mode.key}`;
-                            const shortcutURL = generateShortcutURL(mode, true);
-                            const urlContent = `${mode.name} + 録音\n\nDeep Links:\n- モード切替: ${deepLink}\n- 録音開始: superwhisper://record\n\nインポートURL:\n${shortcutURL}`;
-                            zip.file(`${mode.name} + 録音 - URLs.txt`, urlContent);
-                        }
-                    } catch (error) {
-                        console.error(`Error generating shortcut for ${mode.name}:`, error);
-                        // エラーがあってもURLファイルを作成
-                        const deepLink = `superwhisper://mode?key=${mode.key}`;
-                        const urlContent = `${mode.name} + 録音\n\nDeep Links:\n- モード切替: ${deepLink}\n- 録音開始: superwhisper://record`;
-                        zip.file(`${mode.name} + 録音 - URLs.txt`, urlContent);
-                    }
-                }
-                
-                // READMEファイルを追加
-                const readmeContent = `Superwhisper 録音付きショートカット集
-
-このZIPファイルには、モード切替後に自動的に録音を開始するショートカットが含まれています。
-
-含まれるファイル：
-${hasValidShortcuts ? '- .shortcut ファイル: ダブルクリックでショートカットアプリにインポート' : ''}
-- URLs.txt ファイル: 手動設定用のURL情報
-
-各ショートカットの動作：
-1. 指定されたモードに切り替え
-2. 自動的に録音を開始
-
-インポート方法：
-${hasValidShortcuts ? '1. .shortcutファイルをダブルクリック、またはショートカットアプリにドラッグ&ドロップ' : ''}
-${hasValidShortcuts ? '2. 「ショートカットを追加」をタップ' : '1. URL.txtファイルを開き、インポートURLをコピー'}
-${hasValidShortcuts ? '' : '2. SafariでURLを開くとショートカットアプリが起動します'}`;
-                
-                zip.file('README.txt', readmeContent);
-                
-                const zipBlob = await zip.generateAsync({ type: 'blob' });
-                downloadFile(zipBlob, 'superwhisper-shortcuts-with-record.zip', 'application/zip');
-                showStatus('success', '📦 録音付きショートカットをZIPでダウンロードしました');
-            } catch (error) {
-                console.error('一括ダウンロードエラー:', error);
-                showStatus('error', '❌ 一括ダウンロードに失敗しました');
-            }
-        }
-        
-        function downloadFile(content, filename, mimeType) {
-            const blob = content instanceof Blob ? content : new Blob([content], { type: mimeType });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = filename;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        }
-        
-        // bplist-creatorが読み込まれていない場合の警告
-        window.addEventListener('load', () => {
-            if (typeof bplistCreator === 'undefined') {
-                console.warn('bplist-creator library not loaded. Using fallback method.');
-                // 警告メッセージを表示
-                const warningDiv = document.createElement('div');
-                warningDiv.className = 'warning-box';
-                warningDiv.innerHTML = `
-                    <strong>⚠️ 注意:</strong> ショートカットの直接ダウンロードが利用できない可能性があります。
-                    その場合は、URLファイルをダウンロードして手動でインポートしてください。
-                `;
-                document.querySelector('.info-box').after(warningDiv);
-            }
-        });
     </script>
 </body>
 </html>
